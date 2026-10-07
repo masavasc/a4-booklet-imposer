@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A4 8ページ小冊子 面付けツール</title>
+  <meta name="description" content="表紙＋本文6ページ＋裏表紙を、A4横1枚の8ページ小冊子用に自動面付けするブラウザアプリです。" />
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero__inner">
+      <div>
+        <p class="eyebrow">ONE-SHEET BOOKLET IMPOSER</p>
+        <h1>A4 8ページ小冊子<br class="mobile-only"> 面付けツール</h1>
+        <p class="lead">完成した8ページを読み込むだけで、折り・切り後に正しい順序になるA4横1枚のPDFを作成します。</p>
+      </div>
+      <div class="privacy-chip" title="ファイルはブラウザ内だけで処理されます">🔒 ブラウザ内処理</div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="panel controls-panel" aria-labelledby="setup-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">STEP 1</p>
+          <h2 id="setup-title">ページを読み込む</h2>
+        </div>
+        <button id="resetBtn" class="btn btn--ghost" type="button">すべて消去</button>
+      </div>
+
+      <div class="bulk-upload">
+        <label class="dropzone" id="bulkDropzone" for="bulkPdfInput">
+          <span class="dropzone__icon">8</span>
+          <span class="dropzone__body">
+            <strong>8ページPDFを一括読み込み</strong>
+            <span>PDFをここへドロップ、またはクリックして選択</span>
+          </span>
+          <span class="btn btn--secondary">PDFを選択</span>
+        </label>
+        <input id="bulkPdfInput" type="file" accept="application/pdf,.pdf" hidden />
+      </div>
+
+      <div class="or-divider"><span>または、各ページを個別に指定</span></div>
+
+      <div id="pageCards" class="page-cards" aria-live="polite"></div>
+
+      <div class="settings-grid">
+        <label class="field">
+          <span class="field__label">冊子の開き方</span>
+          <select id="bindingSelect">
+            <option value="left" selected>横書き・左開き</option>
+            <option value="right">縦書き・右開き</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span class="field__label">ページの収め方</span>
+          <select id="scaleModeSelect">
+            <option value="fit" selected>全体を収める（推奨）</option>
+            <option value="stretch">枠いっぱいに合わせる</option>
+          </select>
+        </label>
+
+        <label class="check-field">
+          <input id="guidesCheck" type="checkbox" checked />
+          <span>
+            <strong>折り・切りガイドをPDFに入れる</strong>
+            <small>ページ境界を薄い破線、切れ目を実線で表示</small>
+          </span>
+        </label>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="preview-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">STEP 2</p>
+          <h2 id="preview-title">A4面付けプレビュー</h2>
+        </div>
+        <div id="readyBadge" class="status-badge">0 / 8 ページ</div>
+      </div>
+
+      <p class="hint">上段は印刷時に180°回転しています。中央の赤い線がカッターで切る位置です。</p>
+
+      <div class="preview-wrap">
+        <div id="impositionPreview" class="imposition" aria-label="A4面付けプレビュー"></div>
+      </div>
+
+      <div class="legend">
+        <span><i class="legend__line legend__line--fold"></i> 折り線</span>
+        <span><i class="legend__line legend__line--cut"></i> 切れ目</span>
+      </div>
+    </section>
+
+    <section class="panel export-panel" aria-labelledby="export-title">
+      <div>
+        <p class="section-kicker">STEP 3</p>
+        <h2 id="export-title">印刷用PDFを作成</h2>
+        <p id="exportHelp" class="hint">8ページすべてを読み込むと出力できます。</p>
+      </div>
+      <button id="exportBtn" class="btn btn--primary btn--large" type="button" disabled>
+        A4面付けPDFを作成
+      </button>
+    </section>
+
+    <section class="howto">
+      <details>
+        <summary>折り方・切り方</summary>
+        <div class="howto__body">
+          <ol>
+            <li>A4横で「実際のサイズ／100%」で片面印刷します。</li>
+            <li>縦横の折り線に沿って折り目を付けます。</li>
+            <li>中央の切れ目（A4中央線の中央2区画）だけを切ります。</li>
+            <li>長辺方向に折って中央を開き、星形になるように押し込みます。</li>
+            <li>表紙と裏表紙で本文を挟み込めば完成です。</li>
+          </ol>
+          <p>※ プリンターの「用紙に合わせる」「縮小して印刷」はオフにすると寸法が安定します。</p>
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="busyOverlay" class="busy-overlay" hidden>
+    <div class="busy-card">
+      <div class="spinner"></div>
+      <strong id="busyText">処理中…</strong>
+    </div>
+  </div>
+</body>
+</html>
