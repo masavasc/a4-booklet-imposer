@@ -257,6 +257,10 @@ select { width: 100%; border: 1px solid #cfc6ba; background: white; color: var(-
   z-index: 50;
   backdrop-filter: blur(2px);
 }
+
+.busy-overlay[hidden] {
+  display: none !important;
+}
 .busy-card { background: white; border-radius: 14px; padding: 22px 28px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow); }
 .spinner { width: 22px; height: 22px; border-radius: 50%; border: 3px solid #ddd; border-top-color: var(--accent); animation: spin .75s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
