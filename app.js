@@ -29,6 +29,7 @@
 
   function init() {
     cacheElements();
+    setBusy(false); // Fail-safe: the overlay must never be visible on initial load.
     renderPageCards();
     renderImposition();
     bindEvents();
@@ -489,8 +490,13 @@
   }
 
   function setBusy(on, text = '処理中…') {
+    if (!els.busyOverlay || !els.busyText) return;
     els.busyText.textContent = text;
     els.busyOverlay.hidden = !on;
+    els.busyOverlay.setAttribute('aria-hidden', on ? 'false' : 'true');
+    els.busyOverlay.classList.toggle('is-active', on);
+    // Inline display is intentional: it remains reliable even if an older CSS file is cached.
+    els.busyOverlay.style.display = on ? 'grid' : 'none';
   }
 
   let toastTimer;
